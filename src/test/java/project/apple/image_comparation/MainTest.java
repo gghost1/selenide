@@ -83,6 +83,11 @@ public class MainTest {
         File actualFile = Selenide.screenshot(OutputType.FILE);
         File expectedFile = new File(expectedDir + "/" + expectedName + ".png");
 
+        File diffsDir = new File("target/diffs");
+        if (!diffsDir.exists()) {
+            diffsDir.mkdirs();
+        }
+
         if (!expectedFile.exists()) {
             addImageToAllure(expectedName, actualFile);
             throw new RuntimeException("Expected image not found");
@@ -91,7 +96,7 @@ public class MainTest {
         BufferedImage expectedImage = ImageComparisonUtil.readImageFromResources(expectedDir + "/" + expectedName + ".png");
         BufferedImage actualImage = ImageComparisonUtil.readImageFromResources(actualFile.toPath().toString());
 
-        File resultImage = new File("build/diffs/diff_" + expectedName + ".png");
+        File resultImage = new File("target/diffs/diff_" + expectedName + ".png");
         ImageComparison imageComparison = new ImageComparison(expectedImage, actualImage, resultImage);
         ImageComparisonResult result = imageComparison.compareImages();
 
