@@ -97,8 +97,15 @@ public class MainTest {
         BufferedImage actualImage = ImageComparisonUtil.readImageFromResources(actualFile.toPath().toString());
 
         File resultImage = new File("target/diffs/diff_" + expectedName + ".png");
-        ImageComparison imageComparison = new ImageComparison(expectedImage, actualImage, resultImage);
+        ImageComparison imageComparison = new ImageComparison(expectedImage, actualImage)
+                .setThreshold(5)
+                .setDestination(resultImage);
         ImageComparisonResult result = imageComparison.compareImages();
+
+        if (result.getImageComparisonState() != ImageComparisonState.MATCH) {
+            BufferedImage diffImage = result.getResult();
+            ImageComparisonUtil.saveImage(resultImage, diffImage);
+        }
 
         if (!result.getImageComparisonState().equals(ImageComparisonState.MATCH)) {
             addImageToAllure("actual", actualFile);
