@@ -7,10 +7,8 @@ import com.github.romankh3.image.comparison.ImageComparisonUtil;
 import com.github.romankh3.image.comparison.model.ImageComparisonResult;
 import com.github.romankh3.image.comparison.model.ImageComparisonState;
 import io.qameta.allure.Attachment;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInfo;
+import org.apache.commons.io.FileUtils;
+import org.junit.jupiter.api.*;
 import org.openqa.selenium.OutputType;
 import org.openqa.selenium.chrome.ChromeOptions;
 
@@ -18,27 +16,42 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-import static com.codeborne.selenide.Selenide.closeWebDriver;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MainTest {
 
+    @BeforeAll
+    static void beforeAll() {
+        Configuration.browser = "chrome";
+    }
+
     @BeforeEach
     void setUp() {
         // Уникальная директория для данных пользователя Chrome
-        String userDataDir = "./target/chrome_data/" + LocalDateTime.now().toString().replaceAll("[:.]", "-");
+        String timestamp = LocalDateTime.now().toString().replaceAll("[:.]", "-");
+        String userDataDir = Paths.get(System.getProperty("user.dir"), "target", "chrome_data", timestamp).toString();
+
+        // Удаление директории, если существует
+        FileUtils.deleteQuietly(new File(userDataDir));
 
         ChromeOptions options = new ChromeOptions();
         options.addArguments(
                 "--no-sandbox",
                 "--disable-dev-shm-usage",
                 "--window-size=990,844",
-                "--user-data-dir=" + userDataDir,  // Уникальный путь для каждого теста
-                "--user-agent=Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+                "--user-data-dir=" + userDataDir,
+                "--remote-allow-origins=*"
+        );
+
+        options.addArguments(
+                "--headless=new",
+                "--disable-gpu",
+                "--disable-software-rasterizer"
         );
 
         // Настройка загрузки файлов
@@ -53,8 +66,7 @@ public class MainTest {
 
     @AfterEach
     void tearDown() {
-        // Закрытие браузера и очистка ресурсов
-        closeWebDriver();
+        Selenide.closeWebDriver();
     }
 
     @Test
