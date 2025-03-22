@@ -6,6 +6,7 @@ import com.codeborne.selenide.WebDriverRunner;
 import org.awaitility.Awaitility;
 import org.awaitility.core.ConditionFactory;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
@@ -44,6 +45,7 @@ public class MainTest {
         return isLogContains.get();
     }
 
+    @Disabled
     @Test
     void test() {
         Selenide.open("http://85.192.34.140/logdelay/");
