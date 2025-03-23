@@ -16,6 +16,7 @@ node {
                     error(e.toString())
                 }
             } else {
+                getProject("${base_git_url}", "master")
                 echo "Checkout master branch"
             }
         }
@@ -45,7 +46,6 @@ def returnTestWithTag(String tag) {
 }
 
 def getProject(String repo, String branch) {
-    cleanWs()
     checkout([
             $class: 'GitSCM',
             branches: [[name: branch]],
