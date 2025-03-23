@@ -23,7 +23,7 @@ import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class MainTest {
+public class ImageTest {
 
     @BeforeAll
     static void beforeAll() {
