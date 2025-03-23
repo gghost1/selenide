@@ -1,28 +1,24 @@
-def mvnHome = tool name: 'Maven', type: 'maven'
+def task_branch = "${TEST_BRANCH_NAME}"
+def branch_cutted = task_branch.contains("origin/") ? task_branch.split("origin/")[1] : task_branch.trim()
+currentBuild.displayName = "${branch_cutted}"
+
+def base_git_url = "https://github.com/gghost1/selenide.git"
 
 node {
     withEnv(["branch=${branch_cutted}", "base_url=${base_git_url}"]) {
         stage('Checkout Branch') {
-            script {
-                if (!env.branch.contains("master")) {
-                    checkout([
-                            $class: 'GitSCM',
-                            branches: [[name: env.branch]],
-                            extensions: [],
-                            userRemoteConfigs: [[url: env.base_url]]
-                    ])
-                } else {
-                    checkout scm
-                }
-            }
+            checkout([
+                    $class: 'GitSCM',
+                    branches: [[name: env.branch]],
+                    extensions: [[$class: 'CloneOption', depth: 0, shallow: false]],
+                    userRemoteConfigs: [[url: env.base_url]]
+            ])
         }
 
-        stage('Run Tests') {
-            try {
-                parallel getTestStages(["ImageTest"])
-            } finally {
-                generateAllure()
-            }
+        try {
+            parallel getTestStages(["ImageTest"])
+        } finally {
+            generateAllure()
         }
     }
 }
@@ -39,6 +35,25 @@ def getTestStages(testTags) {
 
 def returnTestWithTag(String tag) {
     catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE') {
-        sh "${mvnHome}/bin/mvn clean test -Dtest=${tag}"
+        labelledShell(label: "Run ${tag}", script: "mvn clean test -Dtest=${tag}")
     }
+}
+
+def getProject(String repo, String branch) {
+    checkout([
+            $class: 'GitSCM',
+            branches: [[name: branch]],
+            extensions: [],
+            userRemoteConfigs: [[url: repo]]
+    ])
+}
+
+def generateAllure() {
+    allure([
+            includeProperties: true,
+            jdk: '',
+            properties: [],
+            reportBuildPolicy: 'ALWAYS',
+            results: [[path: 'target/allure-results']]
+    ])
 }
